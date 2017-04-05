@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.io as sio
 
-
 def process_gridworld_data(input, imsize):
     # run training from input matlab data file, and save test data prediction in output file
     # load data from Matlab file, including
