@@ -7,14 +7,14 @@ from utils import *
 import matplotlib.pyplot as plt
 
 np.random.seed(0)
-sd = 16
+sd = 8
 # Data
 tf.app.flags.DEFINE_string('input', 'data/gridworld_{}.mat'.format(sd), 'Path to data')
 tf.app.flags.DEFINE_integer('imsize', sd, 'Size of input image')
 # Parameters
 tf.app.flags.DEFINE_float('lr', 0.001, 'Learning rate for RMSProp')
 tf.app.flags.DEFINE_integer('epochs', 50, 'Maximum epochs to train for')
-tf.app.flags.DEFINE_integer('k', 20, 'Number of value iterations')
+tf.app.flags.DEFINE_integer('k', 10, 'Number of value iterations')
 tf.app.flags.DEFINE_integer('ch_i', 2, 'Channels in input layer')
 tf.app.flags.DEFINE_integer('ch_h', 150, 'Channels in initial hidden layer')
 tf.app.flags.DEFINE_integer('ch_q', 10, 'Channels in q layer (~actions)')
@@ -27,6 +27,7 @@ tf.app.flags.DEFINE_boolean('log', True, 'Enable for tensorboard summary')
 tf.app.flags.DEFINE_string('logdir', '/tmp/vintf/', 'Directory to store tensorboard summary')
 
 config = tf.app.flags.FLAGS
+sd = config.imsize
 # symbolic input image tensor where typically first channel is image, second is the reward prior
 X = tf.placeholder(tf.float32, name="X", shape=[None, config.imsize, config.imsize, config.ch_i])
 # symbolic input batches of vertical positions
@@ -36,7 +37,7 @@ S2 = tf.placeholder(tf.int32, name="S2", shape=[None, config.statebatchsize])
 y = tf.placeholder(tf.int32, name="y", shape=[None])
 action_vecs_unnorm = [(-1, 0), (1, 0), (0, 1), (0, -1), (-1, 1), (-1, -1), (1, 1), (1, -1)]
 with tf.Session() as sess:
-    new_saver = tf.train.import_meta_graph('my-model{}{}.meta'.format(sd,'untied' if config.untied_weights else ''))
+    new_saver = tf.train.import_meta_graph('my-model{}{}batchnorm.meta'.format(sd,'untied' if config.untied_weights else ''))
     new_saver.restore(sess, tf.train.latest_checkpoint('./'))
     print("MODEL LOADED")
     Xtrain, S1train, S2train, ytrain, Xtest, S1test, S2test, ytest = process_gridworld_data(input=config.input, imsize=config.imsize)

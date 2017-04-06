@@ -126,4 +126,4 @@ def VI_Untied_Block(X, S1, S2, config):
     logits = tf.matmul(q_out, w_o)
     # softmax output weights
     output = tf.nn.softmax(logits, name="output")
-    return logits, output,r
+    return logits, output,v

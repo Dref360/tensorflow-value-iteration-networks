@@ -15,7 +15,7 @@ tf.app.flags.DEFINE_string('input', 'data/gridworld_{}.mat'.format(sd), 'Path to
 tf.app.flags.DEFINE_integer('imsize', sd, 'Size of input image')
 # Parameters
 tf.app.flags.DEFINE_float('lr', 0.001, 'Learning rate for RMSProp')
-tf.app.flags.DEFINE_integer('epochs', 100, 'Maximum epochs to train for')
+tf.app.flags.DEFINE_integer('epochs', 30, 'Maximum epochs to train for')
 tf.app.flags.DEFINE_integer('k', 10, 'Number of value iterations')
 tf.app.flags.DEFINE_integer('ch_i', 2, 'Channels in input layer')
 tf.app.flags.DEFINE_integer('ch_h', 150, 'Channels in initial hidden layer')
@@ -23,12 +23,14 @@ tf.app.flags.DEFINE_integer('ch_q', 10, 'Channels in q layer (~actions)')
 tf.app.flags.DEFINE_integer('batchsize', 12, 'Batch size')
 tf.app.flags.DEFINE_integer('statebatchsize', 10, 'Number of state inputs for each sample (real number, technically is k+1)')
 tf.app.flags.DEFINE_boolean('untied_weights', False, 'Untie weights of VI network')
+tf.app.flags.DEFINE_boolean('show', False, 'Shows the value map at the end (SLOW the training a lot)')
 # Misc.
 tf.app.flags.DEFINE_integer('display_step', 1, 'Print summary output every n epochs')
 tf.app.flags.DEFINE_boolean('log', True, 'Enable for tensorboard summary')
 tf.app.flags.DEFINE_string('logdir', '/tmp/vintf/', 'Directory to store tensorboard summary')
 
 config = tf.app.flags.FLAGS
+sd = config.imsize
 
 # symbolic input image tensor where typically first channel is image, second is the reward prior
 X = tf.placeholder(tf.float32, name="X", shape=[None, config.imsize, config.imsize, config.ch_i])
@@ -96,15 +98,16 @@ with tf.Session() as sess:
                 avg_cost += c_
         acc, _ = sess.run([accuracy, y], feed_dict={X: Xtest[:100], S1: S1test[:100], S2: S2test[:100], y: ytest[:1000]})
         #Display Reward and stuff
-        cv2.imshow('reward', cv2.resize(r_[0], (100, 100), cv2.INTER_NEAREST))
-        img = Xtrain[i, :, :, 0]
-        gx, gy = np.where(Xtrain[i, :, :, 1] == 10)
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-        img[gx, gy] = (255, 0, 0)
-        img = cv2.resize(img, (100, 100), cv2.INTER_NEAREST)
+        if config.show:
+            cv2.imshow('reward', cv2.resize(r_[0], (100, 100), cv2.INTER_NEAREST))
+            img = Xtrain[i, :, :, 0]
+            gx, gy = np.where(Xtrain[i, :, :, 1] == 10)
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+            img[gx, gy] = (255, 0, 0)
+            img = cv2.resize(img, (100, 100), cv2.INTER_NEAREST)
 
-        cv2.imshow('X', img)
-        cv2.waitKey(0)
+            cv2.imshow('X', img)
+            cv2.waitKey(1)
         # Display logs per epoch step
         if epoch % config.display_step == 0:
             elapsed = time.time() - tstart
